@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EPS-TOPIK Master - Ôn Thi Xuất Khẩu Lao Động</title>
+    <title>EPS-TOPIK Master - Ôn Thi Phỏng Vấn Giọng Nói</title>
     <style>
         :root {
             --primary-color: #4a3fd7;
@@ -140,7 +140,6 @@
             flex-direction: column;
         }
 
-        /* Controls inside left panel */
         .action-toolbar {
             display: flex;
             gap: 8px;
@@ -258,78 +257,80 @@
 <body>
 
 <div class="container">
-    <!-- Header -->
     <header>
-        <div class="logo-area">
-            🎓 EPS-TOPIK Master
-        </div>
+        <div class="logo-area">🎓 EPS-TOPIK Master</div>
         <div class="top-nav">
-            <button class="nav-btn">💬 Nhắc Chữ</button>
-            <button class="nav-btn active">🎙️ Vấn Đáp</button>
-            <button class="nav-btn">🧮 Tính Toán & Đổi Đơn Vị</button>
-            <button class="nav-btn">⚠️ Biển Báo & An Toàn Lao Động</button>
+            <button class="nav-btn active">🎙️ Vấn Đáp Phỏng Vấn</button>
         </div>
         <button class="donate-btn">❤️ Ủng hộ tác giả</button>
     </header>
 
-    <!-- Sub-categories -->
-    <div class="category-bar">
-        <button class="cat-btn active">📁 Sản xuất chế tạo</button>
-        <button class="cat-btn">📁 Nông nghiệp</button>
-        <button class="cat-btn">📁 Lâm nghiệp</button>
-        <button class="cat-btn">📁 Ngư nghiệp</button>
-        <button class="cat-btn">📁 Xây dựng</button>
-        <button class="cat-btn">📁 Dịch vụ</button>
-        <button class="cat-btn">📁 Khai thác mỏ</button>
-        <button class="cat-btn">📁 Đóng tàu</button>
+    <!-- Chọn ngành nghề -->
+    <div class="category-bar" id="categoryContainer">
+        <button class="cat-btn active" onclick="switchCategory('chetao', this)">📁 Sản xuất chế tạo</button>
+        <button class="cat-btn" onclick="switchCategory('nongnghiep', this)">📁 Nông nghiệp</button>
+        <button class="cat-btn" onclick="switchCategory('ngunghiep', this)">📁 Ngư nghiệp</button>
+        <button class="cat-btn" onclick="switchCategory('xaydung', this)">📁 Xây dựng</button>
     </div>
 
     <!-- Workspace -->
     <div class="workspace">
-        <!-- Left Panel -->
+        <!-- Cột trái: Điều khiển & Hiển thị câu hỏi -->
         <div class="panel">
             <div class="action-toolbar">
-                <button class="action-btn btn-seq" id="playSeqBtn">▶ Phát tuần tự</button>
-                <button class="action-btn btn-rand" id="playRandBtn">🔀 Ngẫu nhiên</button>
-                <button class="action-btn btn-replay" id="replayBtn">🔄 Nghe lại</button>
-                <button class="action-btn btn-stop" id="stopBtn">⏹ Dừng</button>
-                
-                <div class="settings-inline">
-                    <span>Delay (ms):</span>
-                    <input type="number" id="delayInput" value="1000">
-                </div>
+                <button class="action-btn btn-seq" id="nextBtn">▶ Câu tiếp theo</button>
+                <button class="action-btn btn-rand" id="randBtn">🔀 Ngẫu nhiên</button>
+                <button class="action-btn btn-replay" id="replayBtn">🔄 Nghe câu hỏi</button>
+                <button class="action-btn btn-stop" id="stopBtn">⏹ Dừng phát</button>
             </div>
 
             <div class="action-toolbar" style="background: #fff; margin-bottom: 15px;">
                 <button class="action-btn btn-toggle" id="recordBtn">🎙️ Bắt đầu trả lời</button>
-                <button class="action-btn" style="background: #64748b;" id="sampleAnswerBtn">📄 Xem trả lời mẫu</button>
             </div>
 
             <div class="question-display">
-                <div class="q-title" id="currentQuestionText">Chưa chọn câu hỏi hoặc không có câu hỏi.</div>
+                <div class="q-title" id="currentQuestionText">Đang tải câu hỏi...</div>
                 <div class="answer-output" id="currentAnswerText">Bấm "Bắt đầu trả lời" để nói vào micro...</div>
             </div>
         </div>
 
-        <!-- Right Panel: Danh sách câu hỏi -->
+        <!-- Cột phải: Danh sách câu hỏi theo ngành -->
         <div class="panel">
-            <div class="panel-title">📋 Danh Sách Câu Hỏi</div>
-            <div class="question-list" id="questionListContainer">
-                <!-- Danh sách câu hỏi sẽ được load tự động qua JS -->
-            </div>
+            <div class="panel-title">📋 Danh Sách Câu Hỏi (<span id="catNameTitle">Sản xuất chế tạo</span>)</div>
+            <div class="question-list" id="questionListContainer"></div>
         </div>
     </div>
 </div>
 
 <script>
-    const questions = [
-        "1. 안녕 하십니까? 자기 소개를 해주세요. (Xin chào, hãy giới thiệu bản thân bạn?)",
-        "2. 한국어 공부를 얼마나 하셨습니까? (Bạn đã học tiếng Hàn được bao lâu rồi?)",
-        "3. 이 회사에 지원한 동기가 무엇입니까? (Lý do bạn ứng tuyển vào công ty này là gì?)",
-        "4. 본인의 장점과 단점이 무엇입니까? (Ưu điểm và nhược điểm của bạn là gì?)",
-        "5. 기숙사 생활을 할 수 있습니까? (Bạn có thể sống ở ký túc xá được không?)"
-    ];
+    // Ngân hàng câu hỏi phân theo ngành
+    const questionBank = {
+        chetao: [
+            "1. 안녕 하십니까? 자기 소개를 해주세요. (Xin chào, hãy giới thiệu bản thân?)",
+            "2. 한국어 공부를 얼마나 하셨습니까? (Bạn đã học tiếng Hàn được bao lâu rồi?)",
+            "3. 이 회사에 지원한 동기가 무엇입니까? (Lý do bạn ứng tuyển vào công ty này là gì?)",
+            "4. 프레스 작업을 해본 적이 있습니까? (Bạn đã từng làm công việc dập kim loại/press chưa?)",
+            "5. 작업 중 손을 다치면 어떻게 해야 합니까? (Nếu bị thương ở tay khi làm việc bạn sẽ xử lý thế nào?)"
+        ],
+        nongnghiep: [
+            "1. 비닐하우스에서 일해 본 적이 있습니까? (Bạn đã làm việc trong nhà kính bao giờ chưa?)",
+            "2. 한국의 겨울 날씨는 추운데 괜찮습니까? (Mùa đông Hàn Quốc rất lạnh, bạn chịu được không?)",
+            "3. 농사일은 육체적으로 힘든데 잘 할 수 있습니까? (Làm nông vất vả về thể lực, bạn làm tốt chứ?)",
+            "4. 농약을 칠 때 어떤 보호구를 착용해야 합니까? (Khi phun thuốc trừ sâu cần đeo đồ bảo hộ gì?)"
+        ],
+        ngunghiep: [
+            "1. 배를 타본 적이 있습니까? 멀미를 합니까? (Bạn đã từng đi tàu chưa? Có bị say sóng không?)",
+            "2. 그물을 끌어올리는 작업은 힘든데 괜찮습니까? (Công việc kéo lưới rất nặng nhọc, bạn có chịu được không?)",
+            "3. 바다에서 작업할 때 구명조끼를 꼭 입어야 합니까? (Khi làm việc trên biển có bắt buộc mặc áo phao không?)"
+        ],
+        xaydung: [
+            "1. 건설 현장에서 일해 본 경험이 있습니까? (Bạn đã có kinh nghiệm làm việc ở công trường xây dựng chưa?)",
+            "2. 높은 곳에서 일할 때 안전모와 안전대를 착용합니까? (Khi làm việc trên cao bạn có đội mũ và đeo dây an toàn không?)",
+            "3. 무거운 물건을 들 수 있습니까? (Bạn có nâng được các vật nặng không?)"
+        ]
+    };
 
+    let currentCategory = 'chetao';
     let currentIndex = 0;
     let recognition;
     let isRecording = false;
@@ -337,4 +338,122 @@
     const qTextEl = document.getElementById('currentQuestionText');
     const aTextEl = document.getElementById('currentAnswerText');
     const listContainer = document.getElementById('questionListContainer');
-    const recordBtn
+    const recordBtn = document.getElementById('recordBtn');
+
+    // Chuyển ngành nghề
+    function switchCategory(catKey, btnEl) {
+        currentCategory = catKey;
+        currentIndex = 0;
+        
+        // Cập nhật nút active
+        document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+        btnEl.classList.add('active');
+
+        // Cập nhật tiêu đề cột danh sách
+        const catNames = {
+            chetao: "Sản xuất chế tạo",
+            nongnghiep: "Nông nghiệp",
+            ngunghiep: "Ngư nghiệp",
+            xaydung: "Xây dựng"
+        };
+        document.getElementById('catNameTitle').textContent = catNames[catKey];
+
+        updateView();
+    }
+
+    function renderQuestionList() {
+        listContainer.innerHTML = '';
+        const questions = questionBank[currentCategory];
+        questions.forEach((q, index) => {
+            const item = document.createElement('div');
+            item.className = `question-item ${index === currentIndex ? 'active' : ''}`;
+            item.textContent = q;
+            item.onclick = () => {
+                currentIndex = index;
+                updateView();
+            };
+            listContainer.appendChild(item);
+        });
+    }
+
+    function updateView() {
+        const questions = questionBank[currentCategory];
+        qTextEl.textContent = questions[currentIndex];
+        aTextEl.textContent = 'Bấm "Bắt đầu trả lời" để ghi âm câu trả lời...';
+        renderQuestionList();
+    }
+
+    // Đọc câu hỏi
+    document.getElementById('replayBtn').addEventListener('click', () => {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(questionBank[currentCategory][currentIndex]);
+            utterance.lang = 'ko-KR';
+            window.speechSynthesis.speak(utterance);
+        }
+    });
+
+    document.getElementById('stopBtn').addEventListener('click', () => {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        if (isRecording && recognition) recognition.stop();
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        const questions = questionBank[currentCategory];
+        currentIndex = (currentIndex + 1) % questions.length;
+        updateView();
+    });
+
+    document.getElementById('randBtn').addEventListener('click', () => {
+        const questions = questionBank[currentCategory];
+        currentIndex = Math.floor(Math.random() * questions.length);
+        updateView();
+    });
+
+    // Nhận diện giọng nói trả lời
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'ko-KR';
+
+        recognition.onstart = () => {
+            isRecording = true;
+            recordBtn.style.background = '#ef4444';
+            recordBtn.innerHTML = '⏹️ Dừng trả lời';
+            aTextEl.textContent = 'Đang lắng nghe bạn nói...';
+        };
+
+        recognition.onresult = (event) => {
+            let transcript = '';
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                transcript += event.results[i][0].transcript;
+            }
+            aTextEl.textContent = transcript;
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            recordBtn.style.background = '#10b981';
+            recordBtn.innerHTML = '🎙️ Bắt đầu trả lời';
+        };
+    } else {
+        recordBtn.disabled = true;
+    }
+
+    recordBtn.addEventListener('click', () => {
+        if (!recognition) return;
+        if (!isRecording) {
+            recognition.start();
+        } else {
+            recognition.stop();
+        }
+    });
+
+    // Khởi tạo
+    updateView();
+</script>
+
+</body>
+</html>
